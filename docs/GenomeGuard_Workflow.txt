@@ -1,0 +1,253 @@
+GENOMEGUARD — COMPLETE WORKFLOW
+=================================
+
+OVERVIEW
+--------
+GenomeGuard converts sequencing reads into an evidence-weighted taxonomic
+sample-integrity report.
+
+The workflow has two conceptual layers:
+
+LAYER 1 — DATA PREPARATION
+    SRA → FASTQ → FastQC
+
+LAYER 2 — GENOMEGUARD ANALYSIS
+    FASTQ → Centrifuge → read-level evidence → GenomeGuard interpretation
+          → TSV + HTML + log
+
+STEP 1 — OBTAIN SEQUENCING DATA
+-------------------------------
+For an SRA accession, the general project workflow is:
+
+    prefetch SRR12345678
+
+This retrieves the SRA run.
+
+STEP 2 — CONVERT SRA TO FASTQ
+-----------------------------
+For paired-end data:
+
+    fasterq-dump --split-files SRR12345678
+
+This produces files such as:
+
+    SRR12345678_1.fastq
+    SRR12345678_2.fastq
+
+The two files represent the paired reads.
+
+STEP 3 — BASIC READ QUALITY CONTROL
+------------------------------------
+FastQC is used before GenomeGuard:
+
+    fastqc SRR12345678_1.fastq SRR12345678_2.fastq
+
+FastQC provides a basic quality assessment of the sequencing reads.
+
+GenomeGuard itself is primarily a taxonomic/evidence analysis pipeline; it
+does not replace read-quality assessment.
+
+STEP 4 — RUN GENOMEGUARD
+------------------------
+From the GenomeGuard directory:
+
+    ./genomeguard.sh SRR12345678_1.fastq SRR12345678_2.fastq
+
+The final v1.1 pipeline validates the input and Centrifuge configuration,
+performs classification, and creates sample-specific output.
+
+STEP 5 — CENTRIFUGE CLASSIFICATION
+-----------------------------------
+Centrifuge compares reads against the configured taxonomic reference index.
+
+The classification output contains information such as:
+- read ID
+- sequence/reference ID
+- taxonomic ID
+- Centrifuge score
+- second-best score
+- hit length
+- query length
+- number of matches
+
+The taxonomic report provides aggregated information for taxa, including
+read counts and unique-read support.
+
+STEP 6 — READ-LEVEL SUMMARY
+---------------------------
+GenomeGuard calculates:
+- total classification records
+- classified records
+- unclassified records
+- classification rate
+- unclassified rate
+
+This gives an immediate picture of how much of the input received a
+taxonomic classification.
+
+STEP 7 — PRIMARY TAXONOMIC SIGNAL
+---------------------------------
+GenomeGuard identifies the taxon with the largest classified read count.
+
+For the demonstration dataset SRR39879768:
+
+    Escherichia coli
+    TaxID: 562
+    Reads: 493767
+    Fraction: 76.0932%
+
+This is the dominant computational taxonomic signal for that sample.
+
+STEP 8 — SECONDARY SIGNAL
+-------------------------
+Reads assigned outside the dominant taxon are summarized as secondary
+taxonomic evidence.
+
+For SRR39879768:
+
+    Secondary reads: 155131
+    Secondary burden: 23.9068%
+
+This is a computational burden, not automatically contamination.
+
+STEP 9 — TAXONOMIC COMPLEXITY
+-----------------------------
+GenomeGuard counts unique classified taxa.
+
+For SRR39879768:
+
+    Unique classified taxa: 473
+
+A high number of taxa can reflect genuine biological complexity, shared
+sequence similarity, database composition, or classifier behaviour.
+
+STEP 10 — EVIDENCE WEIGHTING
+----------------------------
+GenomeGuard evaluates multiple dimensions:
+1. read support
+2. relative contribution
+3. unique-read support
+4. positive Centrifuge score
+5. high-score read support
+6. very-high-score read support
+7. score separation from the second-best assignment
+
+The purpose is to avoid treating a single metric as definitive.
+
+STEP 11 — SECONDARY-SIGNAL INVESTIGATION
+-----------------------------------------
+Major secondary taxa are ranked so that large and consistently supported
+signals can be investigated first.
+
+The v0.6–v0.8 development stages introduced:
+- secondary ranking
+- read-level validation
+- cross-evidence consistency
+
+STEP 12 — TAXONOMIC RELATIONSHIP ANALYSIS
+-----------------------------------------
+v0.9 introduced grouping of related signals.
+
+For the demonstration sample, the analysis recognized:
+- Escherichia-associated signal
+- Shigella-associated signal
+- other Enterobacterales-associated signal
+
+This prevents every taxonomic label from being automatically interpreted as
+an independent organism.
+
+STEP 13 — DISCRIMINATIVE EVIDENCE
+---------------------------------
+v0.10 added comparison between:
+- mean Centrifuge score
+- mean second-best score
+- mean score gap
+
+A larger score gap can provide stronger computational separation, while a
+small or zero gap indicates ambiguity.
+
+The final pipeline incorporates the validated concepts into a practical
+sample-level workflow.
+
+STEP 14 — FINAL OUTPUTS
+-----------------------
+GenomeGuard v1.1 produces a sample-specific output directory containing:
+
+1. TSV summary
+   Structured values suitable for downstream analysis.
+
+2. HTML report
+   Human-readable presentation of the analysis.
+
+3. Log
+   Record of pipeline execution.
+
+4. Centrifuge classification/report files
+   Underlying taxonomic evidence used by GenomeGuard.
+
+DEMONSTRATION RESULT
+--------------------
+For SRR39879768:
+
+    Total records       : 654997
+    Classified records  : 648898
+    Unclassified        : 6099
+    Classification rate : 99.0689%
+
+    Primary taxon       : Escherichia coli
+    TaxID               : 562
+    Dominant reads      : 493767
+    Dominant fraction   : 76.0932%
+
+    Secondary burden    : 23.9068%
+    Unique taxa         : 473
+
+    Integrity category  : MODERATE DOMINANCE
+
+SCIENTIFIC INTERPRETATION
+-------------------------
+GenomeGuard identifies a clear dominant taxonomic signal together with a
+substantial secondary classified signal.
+
+The pipeline deliberately avoids claiming that the secondary signal proves:
+- contamination
+- co-infection
+- mixed biological origin
+- true organism abundance
+
+Further validation is required before making those biological conclusions.
+
+END-TO-END FLOW
+---------------
+SRA accession
+     |
+     v
+prefetch
+     |
+     v
+SRA file
+     |
+     v
+fasterq-dump --split-files
+     |
+     v
+FASTQ files
+     |
+     +----> FastQC
+     |
+     v
+GenomeGuard
+     |
+     v
+Centrifuge classification
+     |
+     v
+Read-level + taxonomic evidence
+     |
+     v
+GenomeGuard evidence engine
+     |
+     +----> TSV summary
+     +----> HTML report
+     +----> log
+     +----> classification/report evidence

@@ -1,0 +1,322 @@
+GENOMEGUARD — COMPLETE PROJECT DESCRIPTION
+=============================================
+
+PROJECT NAME
+------------
+GenomeGuard
+
+PROJECT TYPE
+------------
+Bioinformatics / computational genomics / taxonomic evidence analysis
+
+CORE TOOL
+---------
+Centrifuge
+
+PURPOSE
+-------
+GenomeGuard is a practical command-line pipeline designed to analyze
+sequencing reads and produce an evidence-weighted taxonomic integrity report.
+
+The central idea is simple:
+
+Do not stop after asking "Which organism received the most reads?"
+
+Instead ask:
+
+- How many reads were classified?
+- What is the dominant taxonomic signal?
+- How large is the secondary burden?
+- How complex is the taxonomic profile?
+- Are secondary signals supported at the individual-read level?
+- Do their Centrifuge scores provide discrimination from alternatives?
+- Are apparently different taxa closely related?
+- Is there enough evidence to justify further investigation?
+
+GenomeGuard therefore acts as an evidence layer around taxonomic
+classification.
+
+WHY THIS PROJECT WAS DEVELOPED
+------------------------------
+A taxonomic classifier can produce many assignments. A raw list of taxonomic
+IDs is difficult to interpret and can encourage overinterpretation.
+
+GenomeGuard was developed incrementally to transform classifier output into
+a structured sample-level assessment.
+
+The project moved through versions v0.1 to v1.1.
+
+DEVELOPMENT HISTORY
+-------------------
+
+v0.1 — Taxonomic integrity analysis
+- Total records
+- classified/unclassified reads
+- classification rate
+- top taxa
+
+v0.2 — Evidence engine
+- dominant signal
+- secondary signal
+- dominance
+- secondary/dominant ratio
+- unique-read support
+
+v0.3 — Evidence-weighted analysis
+- unique-read percentage
+- relative contribution
+- evidence categories
+
+v0.4/v0.4.1/v0.4.2 — Normalization and robust parsing
+- Correctly mapped Centrifuge report fields
+- Used TaxID, reads, unique reads, and report abundance information
+- Improved species-level evidence extraction
+
+v0.5/v0.5.1 — Sample integrity engine
+- secondary burden
+- taxonomic complexity
+- QC flags
+- conservative interpretation
+
+v0.6 — Secondary signal investigation
+- ranked secondary candidates
+- investigation priorities
+
+v0.7 — Read-level evidence validation
+- mean score
+- positive score
+- high-score support
+- very-high-score support
+- mean score gap
+
+v0.8 — Cross-evidence consistency
+- combined several evidence dimensions
+- identified consistently supported candidates
+
+v0.9 — Taxonomic conflict analysis
+- grouped related taxonomic signals
+- reduced the risk of treating related assignments as independent organisms
+
+v0.10 — Discriminative evidence engine
+- score versus second-best score
+- mean score gap
+- supported/moderate/ambiguous/weak categories
+
+v1.0 — Integrated GenomeGuard pipeline
+- FASTQ input
+- automatic Centrifuge classification
+- integrated analysis
+- sample-specific outputs
+
+v1.1 — Final practical pipeline
+- input/tool validation
+- paired-end support
+- TSV summary
+- HTML report
+- log
+- clean user-facing workflow
+
+FINAL COMMAND
+-------------
+The intended user experience is:
+
+    ./genomeguard.sh sample_1.fastq sample_2.fastq
+
+For paired-end data:
+
+    ./genomeguard.sh SRR39879768_1.fastq SRR39879768_2.fastq
+
+The pipeline should be run from the GenomeGuard project directory.
+
+MAIN INPUT
+----------
+FASTQ sequencing reads.
+
+For paired-end data:
+- Read 1 FASTQ
+- Read 2 FASTQ
+
+REFERENCE RESOURCE
+------------------
+A Centrifuge index with prefix:
+
+    p_compressed+h+v
+
+was used by the project.
+
+The local index is approximately 5.48 GB.
+
+The index is required because Centrifuge needs a reference/index against
+which sequencing reads can be taxonomically classified.
+
+MAIN ANALYSIS OUTPUTS
+---------------------
+GenomeGuard produces:
+
+1. TSV summary
+   Machine-readable summary of important sample metrics.
+
+2. HTML report
+   Human-readable report for review and presentation.
+
+3. Log
+   Execution record.
+
+4. Centrifuge output
+   Detailed read-level and taxonomic classification evidence.
+
+KEY METRICS
+-----------
+Total records
+    Number of classification records processed.
+
+Classified records
+    Records receiving a taxonomic assignment.
+
+Unclassified records
+    Records without a classified taxonomic assignment.
+
+Classification rate
+    Classified records divided by total records.
+
+Dominant taxon
+    Taxon with the largest classified read count.
+
+Dominant fraction
+    Dominant reads relative to classified records.
+
+Secondary burden
+    Classified reads outside the dominant taxon, expressed as a fraction
+    of classified reads.
+
+Taxonomic complexity
+    Number of unique classified taxa.
+
+Score gap
+    Difference between a read's best Centrifuge score and its second-best
+    score, summarized for a taxon.
+
+WHY THE PROJECT IS DIFFERENT FROM A RAW CLASSIFIER OUTPUT
+----------------------------------------------------------
+Centrifuge performs the classification.
+
+GenomeGuard performs the interpretation layer.
+
+GenomeGuard does not replace Centrifuge. It organizes and evaluates the
+evidence produced by Centrifuge.
+
+This distinction is important because a taxonomic classifier can report
+closely related taxa and ambiguous assignments. GenomeGuard therefore
+combines abundance, read support, score evidence, and taxonomic relationships
+before assigning an investigation priority.
+
+DEMONSTRATION DATASET
+---------------------
+The project was demonstrated using:
+
+    SRR39879768
+
+The final analysis produced:
+
+    Total records       : 654997
+    Classified records  : 648898
+    Unclassified        : 6099
+    Classification rate : 99.0689%
+
+    Dominant taxon      : Escherichia coli
+    TaxID               : 562
+    Dominant reads      : 493767
+    Dominant fraction   : 76.0932%
+
+    Secondary burden    : 23.9068%
+    Unique classified taxa: 473
+
+    Integrity category  : MODERATE DOMINANCE
+
+INTERPRETATION OF THE DEMONSTRATION
+------------------------------------
+The sample shows a clear dominant computational taxonomic signal.
+
+At the same time, a substantial secondary classified population is present.
+
+The result therefore should not simply be reported as "pure E. coli" or
+"contaminated" based only on this analysis.
+
+The secondary signal requires additional validation.
+
+LIMITATIONS
+-----------
+GenomeGuard cannot independently prove:
+- contamination
+- co-infection
+- mixed biological origin
+- true organism abundance
+
+Potential reasons for secondary assignments include:
+- sequence similarity between related organisms
+- shared genomic regions
+- reference database composition
+- classifier behaviour
+- ambiguous read assignments
+
+For biological conclusions, independent evidence and appropriate experimental
+or genomic validation are required.
+
+REPRODUCIBILITY
+---------------
+A reproducible GenomeGuard analysis should record:
+- GenomeGuard version
+- Centrifuge version
+- exact index prefix
+- database source and build information
+- database version/release
+- input accession or sample identifier
+- sequencing layout
+- command used
+- output files
+- date of analysis
+
+CURRENT CENTRIFUGE ENVIRONMENT
+------------------------------
+Version observed during project development:
+
+    centrifuge-class version 1.0.5
+
+Executable observed:
+
+    /home/intern/internship_projects/life-science/centrifuge/centrifuge
+
+DATABASE INDEX PREFIX:
+
+    /home/intern/internship_projects/life-science/databases/centrifuge_index/p_compressed+h+v
+
+PROJECT DIRECTORY EXAMPLE:
+
+    ~/internship_projects/life-science/GenomeGuard
+
+PROJECT VALUE
+-------------
+GenomeGuard demonstrates how a relatively simple laptop/workstation-friendly
+bioinformatics workflow can be developed incrementally into a reusable
+analysis tool.
+
+The project emphasizes:
+- reproducibility
+- transparent evidence
+- conservative interpretation
+- practical automation
+- readable reports
+- separation of computational evidence from biological conclusions
+
+FINAL PROJECT STATEMENT
+-----------------------
+GenomeGuard is an evidence-weighted taxonomic sample-integrity pipeline
+built on Centrifuge. It transforms raw FASTQ reads into a structured
+assessment of taxonomic dominance, secondary signals, taxonomic complexity,
+and read-level discriminative evidence.
+
+Its most important principle is:
+
+    Evidence should guide investigation, not be mistaken for proof.
+
+END OF PROJECT DESCRIPTION

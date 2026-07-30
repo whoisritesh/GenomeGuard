@@ -1,0 +1,124 @@
+GENOMEGUARD — CENTRIFUGE INDEX DATABASE
+==========================================
+
+DATABASE USED
+-------------
+GenomeGuard uses a Centrifuge index with the prefix:
+
+    p_compressed+h+v
+
+The working index files were located under:
+
+    ~/internship_projects/life-science/databases/centrifuge_index/
+
+The index occupies approximately 5.48 GB in the project environment.
+
+INDEX FILES OBSERVED
+--------------------
+The main index was observed as:
+
+    p_compressed+h+v.1.cf
+    p_compressed+h+v.2.cf
+    p_compressed+h+v.3.cf
+
+The GenomeGuard pipeline uses the index prefix rather than treating one
+individual .cf file as the database.
+
+WHY AN INDEX IS NEEDED
+----------------------
+GenomeGuard does not classify sequencing reads by comparing every read
+against a raw collection of reference FASTA files directly during each run.
+Centrifuge uses a pre-built compressed/indexed representation of reference
+sequences so that reads can be classified efficiently.
+
+The index is therefore the reference-search infrastructure behind the
+taxonomic classification stage.
+
+WHAT THE INDEX CONTAINS
+-----------------------
+From the project work, the index is a Centrifuge reference index named
+p_compressed+h+v. The exact organism-by-organism contents, reference release,
+build date, and complete database manifest were not established from the
+terminal evidence recorded during this project.
+
+Therefore this document does NOT claim that the index contains a specific
+complete list of organisms unless that information is verified from the
+database build metadata.
+
+The GenomeGuard results demonstrate that the index can produce assignments
+such as:
+- Escherichia coli (TaxID 562)
+- Shigella-associated taxa
+- other Enterobacterales-associated taxa
+- additional taxa present at lower read counts
+
+These result taxa should not be treated as a complete inventory of the
+database.
+
+WHY WE CHOSE THIS DATABASE
+--------------------------
+The project needed a practical taxonomic reference system that could run on
+the available laboratory GPU/compute environment without requiring a very
+large custom classification workflow for every experiment.
+
+Centrifuge provides:
+- indexed taxonomic classification
+- read-level assignments
+- taxonomic IDs
+- classification scores
+- second-best scores
+- hit/query length information
+- a taxonomic report suitable for downstream evidence analysis
+
+GenomeGuard builds its evidence engine on these outputs.
+
+WHY THE DATABASE IS LARGE
+-------------------------
+A multi-reference taxonomic index must represent a large amount of reference
+sequence information and associated indexing/taxonomic structures. The
+approximately 5.48 GB size reflects the local indexed reference resource, not
+the size of one sequencing sample.
+
+The database is normally prepared once and reused for many samples. This is
+why the user can run GenomeGuard on new FASTQ files without rebuilding the
+taxonomic index every time.
+
+IMPORTANT DISTINCTION
+---------------------
+The 5.48 GB index is NOT:
+- the sequencing data
+- the FASTQ file
+- the output of GenomeGuard
+- a genome of Escherichia coli
+- proof that every organism reported by GenomeGuard is truly present
+
+It is the reference/index resource used by Centrifuge to generate taxonomic
+evidence.
+
+REPRODUCIBILITY REQUIREMENT
+---------------------------
+For a publication-quality GenomeGuard analysis, record:
+- Centrifuge version
+- exact index prefix
+- database source/build procedure
+- database build date
+- reference release/version
+- taxonomy source/version
+- checksums of index files
+
+These details are important because changing the reference database can
+change taxonomic classification results.
+
+CURRENT PROJECT ENVIRONMENT
+---------------------------
+Centrifuge version observed:
+    1.0.5
+
+Observed executable:
+    /home/intern/internship_projects/life-science/centrifuge/centrifuge
+
+Observed index prefix:
+    /home/intern/internship_projects/life-science/databases/centrifuge_index/p_compressed+h+v
+
+The project documentation should preserve the exact database provenance once
+the original index-building metadata are available.

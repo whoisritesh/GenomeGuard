@@ -1,0 +1,100 @@
+
+GenomeGuard Project Report
+==========================
+
+Overview
+--------
+GenomeGuard is a bioinformatics pipeline developed to evaluate the taxonomic integrity of sequencing samples using Centrifuge classifications. The project evolved from simple taxonomic summaries into a multi-stage evidence framework.
+
+Objectives
+----------
+- Build an automated pipeline from FASTQ to interpretation.
+- Quantify dominant and secondary taxonomic signals.
+- Avoid over-interpreting secondary classifications as contamination.
+- Produce reproducible reports.
+
+Development Timeline
+--------------------
+v0.1
+- Read classification summary.
+- Classification rate.
+- Top taxa.
+
+v0.2
+- Added evidence metrics including dominance and secondary burden.
+
+v0.3
+- Introduced evidence-weighted species table using read counts and unique reads.
+
+v0.4 / v0.4.2
+- Robust parsing of Centrifuge reports.
+- Normalized species evidence.
+
+v0.5
+- Sample integrity engine.
+- Dominance categories and QC interpretation.
+
+v0.6
+- Ranked secondary signals for investigation.
+
+v0.7
+- Read-level validation using Centrifuge scores.
+
+v0.8
+- Cross-evidence consistency integrating abundance and score metrics.
+
+v0.9
+- Taxonomic conflict analysis grouping related taxa (e.g. Escherichia/Shigella).
+
+v0.10
+- Discriminative evidence using score-gap analysis.
+- Supported / Moderate / Ambiguous evidence classes.
+
+GenomeGuard v1.1
+----------------
+Complete automated pipeline:
+1. Input paired FASTQ files.
+2. Run Centrifuge.
+3. Generate classification and report files.
+4. Compute GenomeGuard metrics.
+5. Produce TSV summary, HTML report, and log.
+
+Workflow
+--------
+SRA -> prefetch -> fasterq-dump -> FastQC -> GenomeGuard -> Centrifuge -> Evidence analysis -> Reports
+
+Key Metrics
+-----------
+- Classification rate
+- Unclassified fraction
+- Dominant taxon
+- Secondary burden
+- Taxonomic complexity
+- Read-level evidence
+- Cross-evidence consistency
+- Score-gap discrimination
+
+Major Achievement
+-----------------
+GenomeGuard became an end-to-end pipeline executable with:
+./genomeguard.sh sample_1.fastq sample_2.fastq
+
+Outputs:
+- classification.tsv
+- report.tsv
+- genomeguard_summary.tsv
+- genomeguard_report.html
+- genomeguard.log
+
+Scientific Principle
+--------------------
+GenomeGuard reports computational evidence only. Secondary taxonomic assignments are not interpreted as proof of contamination, co-infection, or mixed biological origin without additional biological validation.
+
+Future Work
+-----------
+- Single-end support
+- Multi-sample batch mode
+- Interactive HTML dashboard
+- Krona plots
+- Multi-classifier support
+- Containerized release

@@ -1,0 +1,111 @@
+GENOMEGUARD — PROJECT ROADMAP
+================================
+
+Purpose
+-------
+GenomeGuard is a command-line bioinformatics pipeline built around Centrifuge
+to perform read-level taxonomic classification and evidence-weighted sample
+integrity analysis from FASTQ sequencing data.
+
+The project evolved incrementally from simple taxonomic classification into
+a multi-stage evidence engine. The goal is not to declare contamination or
+mixed infection automatically, but to identify taxonomic signals that deserve
+further investigation.
+
+FINAL USER WORKFLOW
+-------------------
+1. Obtain sequencing data (for example, from NCBI SRA).
+2. Convert SRA data to FASTQ when required.
+3. Run basic read-quality assessment with FastQC.
+4. Run GenomeGuard on the FASTQ file(s).
+5. GenomeGuard performs Centrifuge classification.
+6. GenomeGuard summarizes primary and secondary taxonomic evidence.
+7. GenomeGuard produces a TSV summary, HTML report, and log.
+
+Example final usage:
+    ./genomeguard.sh SRR39879768_1.fastq SRR39879768_2.fastq
+
+DEVELOPMENT ROADMAP
+-------------------
+Phase 1 — Input and classification
+- Accept FASTQ input.
+- Validate input files and required tools.
+- Use the Centrifuge index.
+- Generate read-level classification and taxonomic report.
+
+Phase 2 — Basic GenomeGuard analysis
+- Calculate total, classified, and unclassified reads.
+- Calculate classification and unclassified fractions.
+- Identify the dominant taxonomic signal.
+- Identify secondary taxonomic signals.
+- Calculate secondary burden.
+
+Phase 3 — Evidence weighting
+- Add unique-read support.
+- Add relative contribution.
+- Categorize evidence as HIGH, MODERATE, LOW, or TRACE.
+- Avoid interpreting small signals as biological conclusions.
+
+Phase 4 — Quality control
+- Separate classified and unclassified reads correctly.
+- Add QC flags.
+- Report taxonomic complexity.
+- Distinguish a dominant signal from secondary burden.
+
+Phase 5 — Secondary-signal investigation
+- Rank secondary taxa by read support.
+- Evaluate read-level Centrifuge scores.
+- Evaluate positive-score fraction.
+- Evaluate high-score and very-high-score support.
+- Evaluate score separation from the second-best assignment.
+
+Phase 6 — Cross-evidence consistency
+- Combine abundance, relative contribution, score support,
+  high-score support, and very-high-score support.
+- Prioritize signals that are consistent across several evidence dimensions.
+
+Phase 7 — Taxonomic relationship analysis
+- Group closely related taxa where appropriate.
+- Avoid treating every taxonomic label as an independent organism.
+- Recognize that sequence similarity and reference-database composition
+  can create related assignments.
+
+Phase 8 — Discriminative evidence
+- Compare mean Centrifuge score with mean second-best score.
+- Calculate the mean score gap.
+- Classify evidence as SUPPORTED, MODERATE, AMBIGUOUS, or WEAK.
+- Report evidence rather than claiming biological certainty.
+
+Phase 9 — Final v1.1 pipeline
+- Combine the validated analysis into a single user-facing script.
+- Automatically create a sample-specific output directory.
+- Produce:
+    * TSV summary
+    * HTML report
+    * log
+    * Centrifuge classification/report files
+- Make the pipeline practical for new FASTQ datasets.
+
+FUTURE ROADMAP
+--------------
+Potential future development should focus on validation rather than simply
+adding more metrics:
+- Test GenomeGuard on multiple independent datasets.
+- Include samples with known single-organism composition.
+- Include samples with known mixtures where suitable benchmark data exist.
+- Compare GenomeGuard findings with independent taxonomic tools.
+- Add reproducible benchmark datasets and performance metrics.
+- Improve visualization of taxonomic evidence.
+- Add more robust handling of single-end and paired-end data.
+- Document database version, build date, and reference composition.
+- Add automated regression tests for every GenomeGuard release.
+
+IMPORTANT SCIENTIFIC PRINCIPLE
+------------------------------
+GenomeGuard is an evidence-reporting system. A Centrifuge assignment is not
+automatically proof of contamination, co-infection, mixed biological origin,
+or true organism abundance. Closely related organisms may share sequence
+similarity, and classifier/database behaviour can influence assignments.
+
+The roadmap should therefore move toward stronger validation, not toward
+stronger claims without independent evidence.
