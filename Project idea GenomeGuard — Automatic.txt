@@ -1,0 +1,1616 @@
+roject idea: GenomeGuard — Automatic Contamination & Sample-Mix Detection from Sequencing Reads
+
+
+he basic idea
+
+When researchers receive sequencing data, one of the first questions should be:
+
+“Is this actually the biological sample I think it is, or is the dataset contaminated/mixed/mislabeled?”
+
+Your project will create a simple command-line workflow that takes raw sequencing reads and produces a Sample Integrity Report.
+
+
+It will check:
+
+1. Is the expected organism present?
+2. Is another organism unexpectedly present?
+3. How diverse is the sample?
+4. Does the sample look mixed?
+5. How much of the data appears to be unwanted contamination?
+6. What is the dominant organism?
+7. Is the sample suitable for downstream analysis?
+
+
+
+Your final output could look like:
+
+
+================================================
+        GENOMEGUARD SAMPLE INTEGRITY REPORT
+================================================
+
+Input:
+SRRXXXXXXXX
+
+Total reads:              4,820,000
+Estimated usable reads:   4,410,000
+
+Dominant organism:
+Homo sapiens              87.3%
+
+Other detected organisms:
+Bacteria                  8.1%
+Fungi                     1.4%
+Unclassified              3.2%
+
+Sample complexity:
+HIGH
+
+Possible contamination:
+WARNING
+
+Potential sample mixing:
+LOW
+
+Overall sample integrity:
+CAUTION
+
+Recommendation:
+Investigate bacterial contamination before
+downstream analysis.
+================================================
+
+
+The new tool I recommend exposing yourself to
+
+I would use Centrifuge as the main new tool.
+
+It is a command-line taxonomic classification tool for sequencing reads.
+
+
+1.centrifuge
+2.FastQC
+3.Centrifuge
+4.Samtools
+5.awk
+6.grep
+7.sort
+8.uniq
+9.Python
+10.Bash
+
+project-GenomeGuard
+
+
+                 PUBLIC SEQUENCING DATA
+                         │
+                         ▼
+                    FASTQ reads
+                         │
+                         ▼
+                    FastQC
+                         │
+                         ▼
+                    Centrifuge
+                         │
+                         ▼
+              Taxonomic classification
+                         │
+                         ▼
+                 Abundance calculation
+                         │
+             ┌───────────┴───────────┐
+             ▼                       ▼
+      Contamination score       Diversity score
+             │                       │
+             └───────────┬───────────┘
+                         ▼
+                  GenomeGuard
+                         │
+                         ▼
+               SAMPLE INTEGRITY REPORT
+
+
+The final command should eventually be something like:
+./genomeguard.sh sample.fastq
+
+
+
+
+
+
+
+
+
+
+Create your project directory
+
+Open Linux terminal.
+
+
+mkdir -p ~/GenomeGuard
+cd ~/GenomeGuard
+
+
+creat folders
+
+
+mkdir -p data
+mkdir -p fastq
+mkdir -p qc
+mkdir -p centrifuge
+mkdir -p results
+mkdir -p scripts
+mkdir -p database
+
+
+
+
+
+1.download and setup sra toolkit.fastqc and centrifuge
+
+For the first real experiment, don't choose something huge.
+
+Take a small bacterial sequencing run first.
+
+
+2. How to choose the SRA dataset
+
+Go to:
+NCBI SRA
+
+search Escherichia coli whole genome sequencing
+
+
+look for accession number SRRXXXXXXXX
+
+cd ~/GenomeGuard
+
+
+prefetch SRRXXXXXXXX
+
+
+2.Convert SRA → FASTQ
+
+fasterq-dump  --split-files SRRXXXXXXX
+
+
+it will give 
+
+SRRXXXXXXXX_1.fastq
+SRRXXXXXXXX_2.fastq
+
+3.FASTQC 
+
+
+fastqc SRRXXXXXXXX_1.fastq SRRXXXXXXXX_2.fastq 
+
+
+it will give
+
+SRRXXXXXXXX_1_fastqc.html
+SRRXXXXXXXX_1_fastqc.zip
+SRRXXXXXXXX_2_fastqc.html
+SRRXXXXXXXX_2_fastqc.zip
+
+
+
+
+4.Get the Centrifuge real database
+
+Now we need a useful index.
+
+For our project, I recommend a database containing:
+
+
+Bacteria
+Archaea
+Viruses
+Human
+
+
+The official Centrifuge site provides a compressed index containing bacteria, archaea, viruses, and human sequences, listed at about 5.4 GB.
+
+This is much more appropriate for our first GenomeGuard experiment than the huge 64-GB nt index.
+
+Download the prebuilt compressed index from the official Centrifuge site rather than building a massive database yourself.
+
+https://ccb.jhu.edu/software/centrifuge/manual.shtml?utm_source=chatgpt.com
+
+
+go to the given website and download the index database in your project directory
+
+
+5.Run Centrifuge on your bacterial sample
+
+For single-end data:
+
+centrifuge \
+-x ~/GenomeGuard/database/p_compressed \
+-U ~/GenomeGuard/fastq/SRRXXXXXXXX.fastq \
+-S ~/GenomeGuard/centrifuge/SRRXXXXXXXX_classification.tsv \
+--report-file ~/GenomeGuard/centrifuge/SRRXXXXXXXX_report.tsv \
+-p 16
+
+
+
+For paired-end data:
+
+
+centrifuge \
+-x ~/GenomeGuard/database/p_compressed \
+-1 ~/GenomeGuard/fastq/SRRXXXXXXXX_1.fastq \
+-2 ~/GenomeGuard/fastq/SRRXXXXXXXX_2.fastq \
+-S ~/GenomeGuard/centrifuge/SRRXXXXXXXX_classification.tsv \
+--report-file ~/GenomeGuard/centrifuge/SRRXXXXXXXX_report.tsv \
+-p 16
+
+
+
+
+
+
+
+GenomeGuard/
+│
+├── data/
+│   └── SRRXXXXXXXX/
+│
+├── fastq/
+│   ├── SRRXXXXXXXX_1.fastq
+│   └── SRRXXXXXXXX_2.fastq
+│
+├── qc/
+│   ├── SRRXXXXXXXX_1_fastqc.html
+│   └── SRRXXXXXXXX_2_fastqc.html
+│
+├── database/
+│   ├── p_compressed.1.cf
+│   ├── p_compressed.2.cf
+│   └── p_compressed.3.cf
+│
+├── centrifuge/
+│   ├── SRRXXXXXXXX_classification.tsv
+│   └── SRRXXXXXXXX_report.tsv
+│
+├── results/
+│
+└── scripts/
+
+
+The most important installation: Centrifuge
+
+This is our new bioinformatics tool.
+
+We will install it without Conda and without pip:
+
+
+
+cd ~/internship_projects/life-science
+
+
+mkdir -p ~/internship_projects/life-science
+cd ~/internship_projects/life-science
+
+he official Centrifuge page currently lists the Linux x86_64 binary under its releases.
+
+I don't want to give you a guessed download URL, because Centrifuge's release links can change.
+
+Open the official release/download page:
+
+Centrifuge official download page
+
+
+https://ccb.jhu.edu/software/centrifuge/manual.shtml?utm_source=chatgpt.com
+
+
+
+wget 'PASTE_THE_COPIED_OFFICIAL_URL_HERE'
+
+Now set up PATH
+
+~/internship_projects/life-science/centrifuge
+
+
+Add that directory to your PATH:
+
+echo 'export PATH="$HOME/internship_projects/life-science/centrifuge:$PATH"' >> ~/.bashrc
+
+
+Reload .bashrc
+
+
+source ~/.bashrc
+
+
+
+
+Check all Centrifuge programs
+
+which centrifuge
+which centrifuge-build
+which centrifuge-inspect
+which centrifuge-download
+
+
+
+Set CENTRIFUGE_HOME
+
+
+1.echo 'export CENTRIFUGE_HOME="$HOME/internship_projects/life-science/centrifuge"' >> ~/.bashrc
+
+
+2.source ~/.bashrc
+
+
+
+life-science/
+│
+├── tools/
+│   └── centrifuge/
+│       ├── centrifuge
+│       ├── centrifuge-build
+│       ├── centrifuge-inspect
+│       ├── centrifuge-download
+│       ├── example/
+│       └── scripts/
+│
+├── data/
+├── fastq/
+├── qc/
+├── database/
+├── results/
+└── scripts/
+
+
+
+
+database download and setup
+
+
+we have install and set up centrifuge and also done cd ~/internship_projects/life-science/databases/centrifuge_index
+
+# 1. Download via FTP
+wget ftp://ftp.ccb.jhu.edu/pub/infphilo/centrifuge/data/p_compressed+h+v.tar.gz
+
+# 2. Unpack the index files
+tar -xvzf p_compressed+h+v.tar.gz
+
+# 3. Remove the tarball to free up 5.4 GB
+rm p_compressed+h+v.tar.gz
+
+
+
+
+Centrifuge is installed, PATH is configured, and your p_compressed+h+v database is downloaded and extracted. So we should not install anything else right now.
+
+
+
+
+
+~/internship_projects/life-science/
+│
+├── databases/
+│   └── centrifuge_index/
+│       ├── p_compressed+h+v.1.cf
+│       ├── p_compressed+h+v.2.cf
+│       ├── p_compressed+h+v.3.cf
+│       └── ...
+│
+├── tools/
+│   └── centrifuge/
+│
+├── data/
+├── fastq/
+├── qc/
+├── results/
+└── scripts/
+
+
+
+
+Now the important part: Centrifuge
+
+Create a result directory:
+
+mkdir -p ~/internship_projects/life-science/results/centrifuge
+
+
+centrifuge \
+-x ~/internship_projects/life-science/databases/centrifuge_index/p_compressed+h+v \
+-1 ~/internship_projects/life-science/fastq/SRRXXXXXXXX_1.fastq \
+-2 ~/internship_projects/life-science/fastq/SRRXXXXXXXX_2.fastq \
+-S ~/internship_projects/life-science/results/centrifuge/SRRXXXXXXXX_classification.tsv \
+--report-file ~/internship_projects/life-science/results/centrifuge/SRRXXXXXXXX_report.tsv \
+-p 16
+
+
+
+Step 12 — Find E. coli
+
+Run:
+grep -i "Escherichia" SRRXXXXXXXX_report.tsv | head
+
+
+
+
+Find the top taxa
+
+
+head -10 SRRXXXXXXXX_report.tsv
+
+
+
+This is where GenomeGuard starts
+
+
+we have
+
+SRA accession
+       ↓
+FASTQ
+       ↓
+FastQC
+       ↓
+Centrifuge
+       ↓
+Taxonomic report
+
+
+
+
+we will get to know or gone do it.
+
+Centrifuge report
+       ↓
+Expected organism
+       ↓
+Unexpected organisms
+       ↓
+Relative abundance
+       ↓
+Unexpected taxonomic signal
+       ↓
+Potential contamination
+       ↓
+GenomeGuard report
+
+
+
+One more very important test
+
+Let's see whether the report contains a strong dominant organism.
+
+Run:
+
+awk 'NR>1 && $5 > 10 {print $1, $5}' SRR39879768_report.tsv | sort -k2,2nr | head -30
+
+
+wc -l SRR39879768_report.tsv
+
+tail -20 SRR39879768_report.tsv
+
+sort -k5,5nr SRR39879768_report.tsv | head -20
+
+grep -i "Homo sapiens" SRR39879768_report.tsv
+
+grep -i "Escherichia coli" SRR39879768_report.tsv
+
+awk 'NR>1 {sum += $5} END {print "Total classified reads:", sum}' SRR39879768_report.tsv
+
+
+
+
+
+or
+
+
+Run this single block from your current directory:
+
+cd ~/internship_projects/life-science/GenomeGuard/centrifuge
+
+echo "=================================================="
+echo "       GENOMEGUARD - CENTRIFUGE REPORT QC"
+echo "=================================================="
+
+echo
+echo "### 1. REPORT SIZE"
+wc -l SRR39879768_report.tsv
+
+echo
+echo "### 2. REPORT HEADER"
+head -1 SRR39879768_report.tsv
+
+echo
+echo "### 3. TOP 30 SPECIES BY READ COUNT"
+awk 'NR>1 && $3=="species" {
+    print $1 "\t" $5 "\t" $6 "\t" $7
+}' SRR39879768_report.tsv | sort -k2,2nr | head -30
+
+echo
+echo "### 4. TOP 30 SPECIES BY UNIQUE READS"
+awk 'NR>1 && $3=="species" {
+    print $1 "\t" $5 "\t" $6 "\t" $7
+}' SRR39879768_report.tsv | sort -k3,3nr | head -30
+
+
+
+
+echo
+echo "### 5. TOP 30 SPECIES BY ABUNDANCE"
+awk 'NR>1 && $3=="species" && $7+0 > 0 {
+    print $1 "\t" $5 "\t" $6 "\t" $7
+}' SRR39879768_report.tsv | sort -k4,4nr | head -30
+
+echo
+echo "### 6. ESCHERICHIA"
+grep -i "Escherichia" SRR39879768_report.tsv
+
+echo
+echo "### 7. SHIGELLA"
+grep -i "Shigella" SRR39879768_report.tsv
+
+echo
+echo "### 8. ENTEROBACTER"
+grep -i "Enterobacter" SRR39879768_report.tsv | head -20
+
+echo
+echo "### 9. KLEBSIELLA"
+grep -i "Klebsiella" SRR39879768_report.tsv | head -20
+
+echo
+echo "### 10. CITROBACTER"
+grep -i "Citrobacter" SRR39879768_report.tsv | head -20
+
+echo
+echo "### 11. HOMO SAPIENS"
+grep -i "Homo sapiens" SRR39879768_report.tsv
+
+echo
+echo "### 12. SYNTHETIC CONSTRUCT"
+grep -i "synthetic construct" SRR39879768_report.tsv
+
+echo
+echo "### 13. SPECIES WITH >100 READS"
+awk 'NR>1 && $3=="species" && $5>100 {
+    print $1 "\treads=" $5 "\tunique=" $6 "\tabundance=" $7
+}' SRR39879768_report.tsv | sort -t= -k2,2nr
+
+echo
+echo "### 14. SPECIES WITH >10 UNIQUE READS"
+awk 'NR>1 && $3=="species" && $6>10 {
+    print $1 "\treads=" $5 "\tunique=" $6 "\tabundance=" $7
+}' SRR39879768_report.tsv | sort -t= -k3,3nr
+
+echo
+echo "### 15. TOTAL FASTQ READS"
+echo "FASTQ files:"
+ls -lh ~/internship_projects/life-science/GenomeGuard/fastq/
+
+echo
+echo "### 16. FASTQ READ COUNTS"
+for f in ~/internship_projects/life-science/GenomeGuard/fastq/*.fastq; do
+    if [ -f "$f" ]; then
+        echo "$(basename "$f"): $(( $(wc -l < "$f") / 4 )) reads"
+    fi
+done
+
+echo
+echo "### 17. FASTQ TOTAL BASES"
+for f in ~/internship_projects/life-science/GenomeGuard/fastq/*.fastq; do
+    if [ -f "$f" ]; then
+        echo "$(basename "$f"): $(awk 'NR%4==2 {sum+=length($0)} END {print sum}' "$f") bases"
+    fi
+done
+
+echo
+echo "=================================================="
+echo "                    COMPLETE"
+echo "=================================================="
+
+
+What this will give us
+
+We'll get everything in one output:
+
+
+Report size
+↓
+Top organisms by reads
+↓
+Top organisms by unique reads
+↓
+Top organisms by abundance
+↓
+E. coli
+↓
+Shigella
+↓
+Enterobacter
+↓
+Klebsiella
+↓
+Citrobacter
+↓
+Human
+↓
+Synthetic sequences
+↓
+FASTQ read count
+↓
+FASTQ total bases
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FINAL GENOMEGUARD ARTICTURE
+
+
+sample.fastq
+     │
+     ▼
+┌─────────────────────┐
+│ Input validation     │
+└──────────┬──────────┘
+           ▼
+┌─────────────────────┐
+│ FASTQ QC             │
+│ reads / bases / N    │
+└──────────┬──────────┘
+           ▼
+┌─────────────────────┐
+│ Centrifuge           │
+│ taxonomic assignment│
+└──────────┬──────────┘
+           ▼
+┌─────────────────────┐
+│ Read-level evidence  │
+└──────────┬──────────┘
+           ▼
+┌─────────────────────┐
+│ Taxonomic grouping   │
+│ conflict analysis    │
+└──────────┬──────────┘
+           ▼
+┌─────────────────────┐
+│ Discriminative       │
+│ evidence analysis    │
+└──────────┬──────────┘
+           ▼
+┌─────────────────────┐
+│ GenomeGuard report   │
+└─────────────────────┘
+
+
+./genomeguard.sh sample.fastq
+
+
+results/
+└── SRR39879768/
+    ├── SRR39879768_classification.tsv
+    ├── SRR39879768_report.tsv
+    ├── SRR39879768_genomeguard_summary.tsv
+    ├── SRR39879768_genomeguard_report.html
+    └── SRR39879768_genomeguard.log
+
+genomeguard.sh
+      │
+      ├── validate FASTQ
+      ├── run Centrifuge
+      ├── calculate QC
+      ├── calculate taxonomic evidence
+      ├── calculate secondary signals
+      ├── validate read-level evidence
+      ├── calculate score separation
+      ├── group related taxa
+      ├── detect suspicious/conflicting signals
+      └── generate final report
+
+
+
+Let's build GenomeGuard v1.0 now.
+
+
+
+cd ~/internship_projects/life-science/GenomeGuard
+
+
+
+
+The HTML should contain sections such as:
+
+GenomeGuard version
+Input information
+Classification rate
+Unclassified fraction
+Dominant organism
+Dominant read percentage
+Secondary burden
+Taxonomic complexity
+Top 20 taxa
+QC flags
+Integrity category
+Evidence interpretation
+Important limitations
+
+
+
+
+
+CREAT
+
+nano genomeguard.sh
+
+
+
+paste entire script
+
+
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+############################################################
+# GenomeGuard v1.1
+# Final Sample Integrity Analysis Pipeline
+############################################################
+
+VERSION="1.1"
+
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+CENTRIFUGE="${CENTRIFUGE:-/home/intern/internship_projects/life-science/centrifuge/centrifuge}"
+INDEX="${CENTRIFUGE_INDEX:-/home/intern/internship_projects/life-science/databases/centrifuge_index/p_compressed+h+v}"
+
+THREADS="${THREADS:-8}"
+
+############################################################
+# FUNCTIONS
+############################################################
+
+usage() {
+    echo
+    echo "GenomeGuard v${VERSION}"
+    echo
+    echo "Usage:"
+    echo "  ./genomeguard.sh sample.fastq"
+    echo "  ./genomeguard.sh sample_R1.fastq sample_R2.fastq"
+    echo
+    echo "Optional:"
+    echo "  THREADS=16 ./genomeguard.sh sample_R1.fastq sample_R2.fastq"
+    echo
+    exit 1
+}
+
+die() {
+    echo
+    echo "ERROR: $1"
+    echo
+    exit 1
+}
+
+############################################################
+# INPUT
+############################################################
+
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+    usage
+fi
+
+READ1="$1"
+READ2="${2:-}"
+
+[[ -f "$READ1" ]] || die "Input FASTQ not found: $READ1"
+
+if [[ -n "$READ2" ]]; then
+    [[ -f "$READ2" ]] || die "Input FASTQ not found: $READ2"
+fi
+
+############################################################
+# SAMPLE NAME
+############################################################
+
+BASENAME="$(basename "$READ1")"
+
+BASENAME="${BASENAME%.fastq.gz}"
+BASENAME="${BASENAME%.fq.gz}"
+BASENAME="${BASENAME%.fastq}"
+BASENAME="${BASENAME%.fq}"
+
+BASENAME="${BASENAME%_R1}"
+BASENAME="${BASENAME%_1}"
+
+SAMPLE="$BASENAME"
+
+RESULTS_DIR="${PROJECT_DIR}/results/${SAMPLE}"
+
+mkdir -p "$RESULTS_DIR"
+
+CLASSIFICATION="${RESULTS_DIR}/${SAMPLE}_classification.tsv"
+REPORT="${RESULTS_DIR}/${SAMPLE}_report.tsv"
+
+SUMMARY="${RESULTS_DIR}/${SAMPLE}_genomeguard_summary.tsv"
+HTML="${RESULTS_DIR}/${SAMPLE}_genomeguard_report.html"
+LOG="${RESULTS_DIR}/${SAMPLE}_genomeguard.log"
+
+exec > >(tee -a "$LOG") 2>&1
+
+############################################################
+# HEADER
+############################################################
+
+echo "=================================================="
+echo "           GENOMEGUARD v${VERSION}"
+echo "       SAMPLE INTEGRITY ANALYSIS"
+echo "=================================================="
+echo
+echo "Sample      : ${SAMPLE}"
+echo "Read 1      : ${READ1}"
+
+if [[ -n "$READ2" ]]; then
+    echo "Read 2      : ${READ2}"
+    MODE="PAIRED-END"
+else
+    echo "Read 2      : NONE"
+    MODE="SINGLE-END"
+fi
+
+echo "Mode        : ${MODE}"
+echo "Threads     : ${THREADS}"
+echo "Output      : ${RESULTS_DIR}"
+echo
+
+############################################################
+# VALIDATE TOOLS
+############################################################
+
+echo "### INPUT / TOOL VALIDATION"
+
+command -v awk >/dev/null 2>&1 || die "awk not found"
+command -v sort >/dev/null 2>&1 || die "sort not found"
+command -v sed >/dev/null 2>&1 || die "sed not found"
+command -v centrifuge >/dev/null 2>&1 || true
+
+[[ -x "$CENTRIFUGE" ]] || die "Centrifuge executable not found: $CENTRIFUGE"
+
+if [[ ! -f "${INDEX}.1.cf" ]]; then
+    die "Centrifuge index not found: ${INDEX}.1.cf"
+fi
+
+echo "Centrifuge  : ${CENTRIFUGE}"
+echo "Index       : ${INDEX}"
+echo "Validation  : PASS"
+echo
+
+############################################################
+# STEP 1: CENTRIFUGE
+############################################################
+
+echo "### STEP 1: TAXONOMIC CLASSIFICATION"
+echo
+
+CENTRIFUGE_ARGS=(
+    -x "$INDEX"
+    -p "$THREADS"
+    -S "$CLASSIFICATION"
+    --report-file "$REPORT"
+)
+
+if [[ -n "$READ2" ]]; then
+    CENTRIFUGE_ARGS+=(
+        -1 "$READ1"
+        -2 "$READ2"
+    )
+else
+    CENTRIFUGE_ARGS+=(
+        -U "$READ1"
+    )
+fi
+
+"$CENTRIFUGE" "${CENTRIFUGE_ARGS[@]}"
+
+echo
+echo "Centrifuge classification complete."
+echo
+
+############################################################
+# STEP 2: PARSE CLASSIFICATION
+############################################################
+
+echo "### STEP 2: GENOMEGUARD EVIDENCE ENGINE"
+echo
+
+TOTAL="$(awk 'NR>1 {n++} END {print n+0}' "$CLASSIFICATION")"
+
+CLASSIFIED="$(awk 'NR>1 && $3 != 0 {n++} END {print n+0}' "$CLASSIFICATION")"
+
+UNCLASSIFIED="$(awk 'NR>1 && $3 == 0 {n++} END {print n+0}' "$CLASSIFICATION")"
+
+if [[ "$TOTAL" -gt 0 ]]; then
+    CLASS_RATE="$(awk -v c="$CLASSIFIED" -v t="$TOTAL" \
+        'BEGIN {printf "%.4f", (c/t)*100}')"
+
+    UNCLASS_RATE="$(awk -v u="$UNCLASSIFIED" -v t="$TOTAL" \
+        'BEGIN {printf "%.4f", (u/t)*100}')"
+else
+    CLASS_RATE="0.0000"
+    UNCLASS_RATE="0.0000"
+fi
+
+############################################################
+# TOP TAXA
+############################################################
+
+TOP_TAXA="${RESULTS_DIR}/.top_taxa.tmp"
+
+awk '
+NR>1 && $3 != 0 {
+    count[$3]++
+}
+END {
+    for (tax in count)
+        print count[tax], tax
+}' "$CLASSIFICATION" |
+sort -nr |
+head -20 > "$TOP_TAXA"
+
+DOMINANT_READS="$(awk 'NR==1 {print $1}' "$TOP_TAXA")"
+DOMINANT_TAXID="$(awk 'NR==1 {print $2}' "$TOP_TAXA")"
+
+SECOND_READS="$(awk 'NR==2 {print $1}' "$TOP_TAXA")"
+SECOND_TAXID="$(awk 'NR==2 {print $2}' "$TOP_TAXA")"
+
+if [[ -z "${DOMINANT_READS:-}" ]]; then
+    DOMINANT_READS=0
+    DOMINANT_TAXID=0
+fi
+
+if [[ -z "${SECOND_READS:-}" ]]; then
+    SECOND_READS=0
+    SECOND_TAXID=0
+fi
+
+DOMINANCE="$(awk -v d="$DOMINANT_READS" -v c="$CLASSIFIED" \
+    'BEGIN {if(c>0) printf "%.4f",100*d/c; else print "0.0000"}')"
+
+SECONDARY_READS=$((CLASSIFIED - DOMINANT_READS))
+
+SECONDARY_BURDEN="$(awk -v s="$SECONDARY_READS" -v c="$CLASSIFIED" \
+    'BEGIN {if(c>0) printf "%.4f",100*s/c; else print "0.0000"}')"
+
+UNIQUE_TAXA="$(awk '
+NR>1 && $3 != 0 {
+    tax[$3]=1
+}
+END {
+    n=0
+    for(t in tax) n++
+    print n
+}' "$CLASSIFICATION")"
+
+############################################################
+# TAXON NAME LOOKUP
+############################################################
+
+get_taxon_name() {
+
+    local TAXID="$1"
+
+    awk -v target="$TAXID" '
+    BEGIN {FS="[[:space:]]+"}
+    NR>1 {
+        if ($3 == target) {
+            print $1 " " $2
+            exit
+        }
+    }' "$REPORT"
+}
+
+DOMINANT_NAME="$(get_taxon_name "$DOMINANT_TAXID")"
+SECOND_NAME="$(get_taxon_name "$SECOND_TAXID")"
+
+[[ -n "$DOMINANT_NAME" ]] || DOMINANT_NAME="TaxID ${DOMINANT_TAXID}"
+[[ -n "$SECOND_NAME" ]] || SECOND_NAME="TaxID ${SECOND_TAXID}"
+
+############################################################
+# QUALITY FLAGS
+############################################################
+
+if awk -v x="$UNCLASS_RATE" 'BEGIN {exit !(x < 10)}'; then
+    FLAG_UNCLASS="PASS"
+else
+    FLAG_UNCLASS="FLAG"
+fi
+
+if awk -v x="$DOMINANCE" 'BEGIN {exit !(x >= 50)}'; then
+    FLAG_DOMINANT="PASS"
+else
+    FLAG_DOMINANT="FLAG"
+fi
+
+if awk -v x="$SECONDARY_BURDEN" 'BEGIN {exit !(x >= 10)}'; then
+    FLAG_SECONDARY="FLAG"
+else
+    FLAG_SECONDARY="PASS"
+fi
+
+if [[ "$UNIQUE_TAXA" -gt 100 ]]; then
+    FLAG_COMPLEXITY="FLAG"
+else
+    FLAG_COMPLEXITY="PASS"
+fi
+
+############################################################
+# INTEGRITY CATEGORY
+############################################################
+
+if awk -v d="$DOMINANCE" -v s="$SECONDARY_BURDEN" '
+BEGIN {
+    if (d >= 90 && s < 10)
+        exit 0
+    else
+        exit 1
+}'; then
+
+    INTEGRITY="STRONG SINGLE-TAXON SIGNAL"
+
+elif awk -v d="$DOMINANCE" '
+BEGIN {
+    if (d >= 50)
+        exit 0
+    else
+        exit 1
+}'; then
+
+    INTEGRITY="MODERATE DOMINANCE"
+
+else
+
+    INTEGRITY="COMPLEX TAXONOMIC PROFILE"
+
+fi
+
+############################################################
+# TSV SUMMARY
+############################################################
+
+cat > "$SUMMARY" <<EOF
+GenomeGuard_Version	${VERSION}
+Sample	${SAMPLE}
+Input_Mode	${MODE}
+Read1	${READ1}
+Read2	${READ2:-NA}
+Total_Records	${TOTAL}
+Classified_Records	${CLASSIFIED}
+Unclassified_Records	${UNCLASSIFIED}
+Classification_Rate_Percent	${CLASS_RATE}
+Unclassified_Rate_Percent	${UNCLASS_RATE}
+Dominant_TaxID	${DOMINANT_TAXID}
+Dominant_Taxon	${DOMINANT_NAME}
+Dominant_Reads	${DOMINANT_READS}
+Dominant_Fraction_Percent	${DOMINANCE}
+Secondary_Reads	${SECONDARY_READS}
+Secondary_Burden_Percent	${SECONDARY_BURDEN}
+Leading_Secondary_TaxID	${SECOND_TAXID}
+Leading_Secondary_Taxon	${SECOND_NAME}
+Leading_Secondary_Reads	${SECOND_READS}
+Unique_Classified_Taxa	${UNIQUE_TAXA}
+Unclassified_QC	${FLAG_UNCLASS}
+Dominant_Signal_QC	${FLAG_DOMINANT}
+Secondary_Burden_QC	${FLAG_SECONDARY}
+Taxonomic_Complexity_QC	${FLAG_COMPLEXITY}
+Integrity_Category	${INTEGRITY}
+EOF
+
+############################################################
+# TOP TAXA TSV
+############################################################
+
+TOP_TAXA_TABLE="${RESULTS_DIR}/.top_taxa_table.tmp"
+
+echo -e "Rank\tReads\tTaxID\tRelative_Percent\tTaxon" > "$TOP_TAXA_TABLE"
+
+rank=0
+
+while read -r reads taxid; do
+
+    rank=$((rank + 1))
+
+    relative="$(awk -v r="$reads" -v c="$CLASSIFIED" \
+        'BEGIN {if(c>0) printf "%.4f",100*r/c; else print "0.0000"}')"
+
+    name="$(get_taxon_name "$taxid")"
+    [[ -n "$name" ]] || name="TaxID ${taxid}"
+
+    echo -e "${rank}\t${reads}\t${taxid}\t${relative}\t${name}" \
+        >> "$TOP_TAXA_TABLE"
+
+done < "$TOP_TAXA"
+
+############################################################
+# HTML REPORT
+############################################################
+
+cat > "$HTML" <<EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GenomeGuard Report - ${SAMPLE}</title>
+
+<style>
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 40px;
+    background: #f5f7fa;
+    color: #222;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+header {
+    background: #17202a;
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+h1 {
+    margin: 0 0 8px 0;
+}
+
+h2 {
+    margin-top: 35px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.value {
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #eaecef;
+}
+
+.pass {
+    font-weight: bold;
+}
+
+.flag {
+    font-weight: bold;
+}
+
+.warning {
+    background: #fff4d6;
+    padding: 18px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.footer {
+    margin-top: 40px;
+    font-size: 13px;
+    color: #666;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+<h1>GenomeGuard v${VERSION}</h1>
+<div>Sample Integrity Analysis</div>
+<div style="margin-top:10px;">Sample: <strong>${SAMPLE}</strong></div>
+</header>
+
+<h2>Sample Summary</h2>
+
+<div class="grid">
+
+<div class="card">
+Classification rate
+<div class="value">${CLASS_RATE}%</div>
+</div>
+
+<div class="card">
+Unclassified reads
+<div class="value">${UNCLASS_RATE}%</div>
+</div>
+
+<div class="card">
+Dominant taxon
+<div class="value">${DOMINANCE}%</div>
+</div>
+
+<div class="card">
+Taxonomic complexity
+<div class="value">${UNIQUE_TAXA}</div>
+</div>
+
+</div>
+
+<h2>Primary Taxonomic Signal</h2>
+
+<div class="card">
+<strong>${DOMINANT_NAME}</strong><br>
+TaxID: ${DOMINANT_TAXID}<br>
+Reads: ${DOMINANT_READS}<br>
+Relative contribution: ${DOMINANCE}%
+</div>
+
+<h2>Secondary Signal</h2>
+
+<div class="card">
+Secondary classified reads: ${SECONDARY_READS}<br>
+Secondary burden: ${SECONDARY_BURDEN}%<br><br>
+
+Leading secondary signal:<br>
+<strong>${SECOND_NAME}</strong><br>
+TaxID: ${SECOND_TAXID}<br>
+Reads: ${SECOND_READS}
+</div>
+
+<h2>Quality-Control Flags</h2>
+
+<table>
+<tr>
+<th>Metric</th>
+<th>Status</th>
+</tr>
+
+<tr>
+<td>Unclassified fraction</td>
+<td class="${FLAG_UNCLASS,,}">${FLAG_UNCLASS}</td>
+</tr>
+
+<tr>
+<td>Dominant taxonomic signal</td>
+<td class="${FLAG_DOMINANT,,}">${FLAG_DOMINANT}</td>
+</tr>
+
+<tr>
+<td>Secondary taxonomic burden</td>
+<td class="${FLAG_SECONDARY,,}">${FLAG_SECONDARY}</td>
+</tr>
+
+<tr>
+<td>Taxonomic complexity</td>
+<td class="${FLAG_COMPLEXITY,,}">${FLAG_COMPLEXITY}</td>
+</tr>
+</table>
+
+<h2>Integrity Assessment</h2>
+
+<div class="card">
+<strong>${INTEGRITY}</strong>
+</div>
+
+<h2>Top Classified Taxa</h2>
+
+<table>
+<tr>
+<th>Rank</th>
+<th>Reads</th>
+<th>TaxID</th>
+<th>Relative %</th>
+<th>Taxon</th>
+</tr>
+EOF
+
+tail -n +2 "$TOP_TAXA_TABLE" | while IFS=$'\t' read -r rank reads taxid relative name; do
+    cat >> "$HTML" <<EOF
+<tr>
+<td>${rank}</td>
+<td>${reads}</td>
+<td>${taxid}</td>
+<td>${relative}%</td>
+<td>${name}</td>
+</tr>
+EOF
+done
+
+cat >> "$HTML" <<EOF
+</table>
+
+<h2>GenomeGuard Interpretation</h2>
+
+<div class="warning">
+
+The sample contains a clear dominant taxonomic signal.
+
+A substantial secondary classified signal is also present.
+Secondary taxonomic evidence should therefore be investigated
+before assigning a simple single-organism interpretation.
+
+GenomeGuard reports computational taxonomic evidence.
+Secondary assignments do not independently prove:
+
+<ul>
+<li>contamination</li>
+<li>co-infection</li>
+<li>mixed biological origin</li>
+<li>true organism abundance</li>
+</ul>
+
+Closely related taxa may share sequence similarity.
+Reference database composition and classifier behaviour must
+therefore be considered before biological conclusions.
+
+</div>
+
+<h2>Input Information</h2>
+
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>GenomeGuard version</td><td>${VERSION}</td></tr>
+<tr><td>Sample</td><td>${SAMPLE}</td></tr>
+<tr><td>Mode</td><td>${MODE}</td></tr>
+<tr><td>Read 1</td><td>${READ1}</td></tr>
+<tr><td>Read 2</td><td>${READ2:-NA}</td></tr>
+<tr><td>Centrifuge index</td><td>${INDEX}</td></tr>
+<tr><td>Threads</td><td>${THREADS}</td></tr>
+</table>
+
+<div class="footer">
+Generated by GenomeGuard v${VERSION}.
+This report describes computational taxonomic evidence and
+should not be interpreted as definitive biological proof.
+</div>
+
+</div>
+</body>
+</html>
+EOF
+
+############################################################
+# CLEANUP
+############################################################
+
+rm -f "$TOP_TAXA"
+rm -f "$TOP_TAXA_TABLE"
+
+############################################################
+# FINAL TERMINAL REPORT
+############################################################
+
+echo
+echo "=================================================="
+echo "        GENOMEGUARD v${VERSION} COMPLETE"
+echo "=================================================="
+echo
+echo "Sample:"
+echo "  ${SAMPLE}"
+echo
+echo "Primary taxon:"
+echo "  ${DOMINANT_NAME}"
+echo "  TaxID: ${DOMINANT_TAXID}"
+echo "  Reads: ${DOMINANT_READS}"
+echo "  Fraction: ${DOMINANCE}%"
+echo
+echo "Secondary burden:"
+echo "  ${SECONDARY_BURDEN}%"
+echo
+echo "Taxonomic complexity:"
+echo "  ${UNIQUE_TAXA} classified taxa"
+echo
+echo "Integrity category:"
+echo "  ${INTEGRITY}"
+echo
+echo "OUTPUT FILES"
+echo
+echo "TSV summary:"
+echo "  ${SUMMARY}"
+echo
+echo "HTML report:"
+echo "  ${HTML}"
+echo
+echo "Log:"
+echo "  ${LOG}"
+echo
+echo "=================================================="
+
+
+
+
+
+then save
+Ctrl+O
+Enter
+Ctrl+X
+
+
+
+then make it executable
+
+chmod +x genomeguard.sh
+
+
+Run it on your existing sample
+
+Since your existing sample is paired-end:
+
+
+./genomeguard.sh \
+fastq/SRR39879768_1.fastq \
+fastq/SRR39879768_2.fastq
+
+
+
+It should create:in the current directory
+
+results/SRR39879768/
+
+
+SRR39879768_classification.tsv
+SRR39879768_report.tsv
+SRR39879768_genomeguard_summary.tsv
+SRR39879768_genomeguard_report.html
+SRR39879768_genomeguard.log
+
+
+
+
+
+                 FASTQ
+                   │
+                   ▼
+          ┌─────────────────┐
+          │    Centrifuge   │
+          └────────┬────────┘
+                   │
+        ┌──────────┴──────────┐
+        ▼                     ▼
+ classification.tsv       report.tsv
+        │                     │
+        └──────────┬──────────┘
+                   ▼
+        ┌─────────────────────┐
+        │ GenomeGuard Engine  │
+        │                     │
+        │ Read abundance      │
+        │ Classification QC   │
+        │ Dominant signal     │
+        │ Secondary burden    │
+        │ Taxonomic complexity│
+        │ Evidence flags      │
+        └──────────┬──────────┘
+                   │
+             ┌─────┴─────┐
+             ▼           ▼
+            TSV         HTML
+          summary      report
+
+
+
+
+
+results/SRR39879768/
+├── SRR39879768_classification.tsv
+├── SRR39879768_report.tsv
+├── SRR39879768_genomeguard_summary.tsv
+├── SRR39879768_genomeguard_report.html
+└── SRR39879768_genomeguard.log
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
