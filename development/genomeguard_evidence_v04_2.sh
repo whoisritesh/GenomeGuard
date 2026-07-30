@@ -1,0 +1,116 @@
+#!/bin/bash
+
+CLASSIFICATION="$1"
+REPORT="$2"
+
+if [ -z "$CLASSIFICATION" ] || [ -z "$REPORT" ]; then
+    echo "Usage:"
+    echo "./scripts/genomeguard_evidence_v04_2.sh <classification.tsv> <report.tsv>"
+    exit 1
+fi
+
+if [ ! -f "$CLASSIFICATION" ]; then
+    echo "ERROR: Classification file not found:"
+    echo "$CLASSIFICATION"
+    exit 1
+fi
+
+if [ ! -f "$REPORT" ]; then
+    echo "ERROR: Report file not found:"
+    echo "$REPORT"
+    exit 1
+fi
+
+echo "=================================================="
+echo "          GENOMEGUARD v0.4.2"
+echo "       ROBUST TAXONOMIC EVIDENCE"
+echo "=================================================="
+
+CLASSIFIED=$(awk '
+NR > 1 && $3 != 0 {n++}
+END {print n+0}
+' "$CLASSIFICATION")
+
+echo
+echo "Classified records: $CLASSIFIED"
+
+echo
+echo "### NORMALIZED SPECIES EVIDENCE"
+
+printf "%-10s %-12s %-12s %-12s %-12s %-10s %s\n" \
+"TAXID" "READS" "UNIQUE" "UNIQUE%" "RELATIVE%" "EVIDENCE" "SPECIES"
+
+awk -v total="$CLASSIFIED" '
+NR > 1 && $(NF-4) == "species" {
+
+    taxid=$(NF-5)
+    reads=$(NF-2)
+    unique=$(NF-1)
+
+    name=""
+
+    for(i=1; i<=NF-6; i++) {
+        name=name (i>1 ? " " : "") $i
+    }
+
+    if(reads > 0) {
+
+        unique_ratio=(unique/reads)*100
+        relative=(reads/total)*100
+
+        if(reads >= 10000 && unique >= 1000)
+            evidence="HIGH"
+        else if(reads >= 1000 && unique >= 100)
+            evidence="MODERATE"
+        else if(reads >= 100 && unique >= 10)
+            evidence="LOW"
+        else
+            evidence="TRACE"
+
+        printf "%-10s %-12d %-12d %-12.3f %-12.4f %-10s %s\n",
+        taxid,
+        reads,
+        unique,
+        unique_ratio,
+        relative,
+        evidence,
+        name
+    }
+}' "$REPORT" |
+sort -k5,5nr |
+head -30
+
+echo
+echo "=================================================="
+echo "### STRONG SECONDARY SIGNALS"
+echo "=================================================="
+
+awk -v total="$CLASSIFIED" '
+NR > 1 && $(NF-4) == "species" {
+
+    taxid=$(NF-5)
+    reads=$(NF-2)
+    unique=$(NF-1)
+
+    name=""
+
+    for(i=1; i<=NF-6; i++) {
+        name=name (i>1 ? " " : "") $i
+    }
+
+    relative=(reads/total)*100
+
+    if(reads >= 1000 && unique >= 100)
+        printf "%10d %10d %10.4f %s [%s]\n",
+        reads,
+        unique,
+        relative,
+        name,
+        taxid
+}' "$REPORT" |
+sort -k1,1nr
+
+echo
+echo "=================================================="
+echo "GenomeGuard v0.4.2 complete"
+echo "=================================================="
