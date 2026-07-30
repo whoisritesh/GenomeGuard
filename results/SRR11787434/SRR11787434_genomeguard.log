@@ -1,0 +1,63 @@
+==================================================
+           GENOMEGUARD v1.1
+       SAMPLE INTEGRITY ANALYSIS
+==================================================
+
+Sample      : SRR11787434
+Read 1      : SRR11787434_1.fastq
+Read 2      : SRR11787434_2.fastq
+Mode        : PAIRED-END
+Threads     : 8
+Output      : /home/intern/internship_projects/life-science/GenomeGuard/results/SRR11787434
+
+### INPUT / TOOL VALIDATION
+Centrifuge  : /home/intern/internship_projects/life-science/centrifuge/centrifuge
+Index       : /home/intern/internship_projects/life-science/databases/centrifuge_index/p_compressed+h+v
+Validation  : PASS
+
+### STEP 1: TAXONOMIC CLASSIFICATION
+
+report file /home/intern/internship_projects/life-science/GenomeGuard/results/SRR11787434/SRR11787434_report.tsv
+Number of iterations in EM algorithm: 45
+Probability diff. (P - P_prev) in the last iteration: 5.4763e-11
+Calculating abundance: 00:00:00
+
+Centrifuge classification complete.
+
+### STEP 2: GENOMEGUARD EVIDENCE ENGINE
+
+
+==================================================
+        GENOMEGUARD v1.1 COMPLETE
+==================================================
+
+Sample:
+  SRR11787434
+
+Primary taxon:
+  Staphylococcus aureus
+  TaxID: 1280
+  Reads: 1602897
+  Fraction: 90.9717%
+
+Secondary burden:
+  9.0283%
+
+Taxonomic complexity:
+  493 classified taxa
+
+Integrity category:
+  STRONG SINGLE-TAXON SIGNAL
+
+OUTPUT FILES
+
+TSV summary:
+  /home/intern/internship_projects/life-science/GenomeGuard/results/SRR11787434/SRR11787434_genomeguard_summary.tsv
+
+HTML report:
+  /home/intern/internship_projects/life-science/GenomeGuard/results/SRR11787434/SRR11787434_genomeguard_report.html
+
+Log:
+  /home/intern/internship_projects/life-science/GenomeGuard/results/SRR11787434/SRR11787434_genomeguard.log
+
+==================================================

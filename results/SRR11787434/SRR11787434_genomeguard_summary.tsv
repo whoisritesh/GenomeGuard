@@ -1,0 +1,25 @@
+GenomeGuard_Version	1.1
+Sample	SRR11787434
+Input_Mode	PAIRED-END
+Read1	SRR11787434_1.fastq
+Read2	SRR11787434_2.fastq
+Total_Records	1768914
+Classified_Records	1761974
+Unclassified_Records	6940
+Classification_Rate_Percent	99.6077
+Unclassified_Rate_Percent	0.3923
+Dominant_TaxID	1280
+Dominant_Taxon	Staphylococcus aureus
+Dominant_Reads	1602897
+Dominant_Fraction_Percent	90.9717
+Secondary_Reads	159077
+Secondary_Burden_Percent	9.0283
+Leading_Secondary_TaxID	985002
+Leading_Secondary_Taxon	Staphylococcus argenteus
+Leading_Secondary_Reads	27319
+Unique_Classified_Taxa	493
+Unclassified_QC	PASS
+Dominant_Signal_QC	PASS
+Secondary_Burden_QC	PASS
+Taxonomic_Complexity_QC	FLAG
+Integrity_Category	STRONG SINGLE-TAXON SIGNAL
