@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GenomeGuard Report - SRR39879765</title>
+
+<style>
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 40px;
+    background: #f5f7fa;
+    color: #222;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+header {
+    background: #17202a;
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+h1 {
+    margin: 0 0 8px 0;
+}
+
+h2 {
+    margin-top: 35px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.value {
+    font-size: 25px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background: #eaecef;
+}
+
+.pass {
+    font-weight: bold;
+}
+
+.flag {
+    font-weight: bold;
+}
+
+.warning {
+    background: #fff4d6;
+    padding: 18px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.footer {
+    margin-top: 40px;
+    font-size: 13px;
+    color: #666;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+<h1>GenomeGuard v1.1</h1>
+<div>Sample Integrity Analysis</div>
+<div style="margin-top:10px;">Sample: <strong>SRR39879765</strong></div>
+</header>
+
+<h2>Sample Summary</h2>
+
+<div class="grid">
+
+<div class="card">
+Classification rate
+<div class="value">99.2554%</div>
+</div>
+
+<div class="card">
+Unclassified reads
+<div class="value">0.7446%</div>
+</div>
+
+<div class="card">
+Dominant taxon
+<div class="value">51.8404%</div>
+</div>
+
+<div class="card">
+Taxonomic complexity
+<div class="value">599</div>
+</div>
+
+</div>
+
+<h2>Primary Taxonomic Signal</h2>
+
+<div class="card">
+<strong>Escherichia coli</strong><br>
+TaxID: 562<br>
+Reads: 590731<br>
+Relative contribution: 51.8404%
+</div>
+
+<h2>Secondary Signal</h2>
+
+<div class="card">
+Secondary classified reads: 548788<br>
+Secondary burden: 48.1596%<br><br>
+
+Leading secondary signal:<br>
+<strong>Shigella sonnei</strong><br>
+TaxID: 624<br>
+Reads: 134161
+</div>
+
+<h2>Quality-Control Flags</h2>
+
+<table>
+<tr>
+<th>Metric</th>
+<th>Status</th>
+</tr>
+
+<tr>
+<td>Unclassified fraction</td>
+<td class="pass">PASS</td>
+</tr>
+
+<tr>
+<td>Dominant taxonomic signal</td>
+<td class="pass">PASS</td>
+</tr>
+
+<tr>
+<td>Secondary taxonomic burden</td>
+<td class="flag">FLAG</td>
+</tr>
+
+<tr>
+<td>Taxonomic complexity</td>
+<td class="flag">FLAG</td>
+</tr>
+</table>
+
+<h2>Integrity Assessment</h2>
+
+<div class="card">
+<strong>MODERATE DOMINANCE</strong>
+</div>
+
+<h2>Top Classified Taxa</h2>
+
+<table>
+<tr>
+<th>Rank</th>
+<th>Reads</th>
+<th>TaxID</th>
+<th>Relative %</th>
+<th>Taxon</th>
+</tr>
+<tr>
+<td>1</td>
+<td>590731</td>
+<td>562</td>
+<td>51.8404%</td>
+<td>Escherichia coli</td>
+</tr>
+<tr>
+<td>2</td>
+<td>134161</td>
+<td>624</td>
+<td>11.7735%</td>
+<td>Shigella sonnei</td>
+</tr>
+<tr>
+<td>3</td>
+<td>121177</td>
+<td>1813821</td>
+<td>10.6340%</td>
+<td>TaxID 1813821</td>
+</tr>
+<tr>
+<td>4</td>
+<td>119974</td>
+<td>621</td>
+<td>10.5285%</td>
+<td>Shigella boydii</td>
+</tr>
+<tr>
+<td>5</td>
+<td>86088</td>
+<td>623</td>
+<td>7.5548%</td>
+<td>Shigella flexneri</td>
+</tr>
+<tr>
+<td>6</td>
+<td>27500</td>
+<td>622</td>
+<td>2.4133%</td>
+<td>Shigella dysenteriae</td>
+</tr>
+<tr>
+<td>7</td>
+<td>11281</td>
+<td>28901</td>
+<td>0.9900%</td>
+<td>Salmonella enterica</td>
+</tr>
+<tr>
+<td>8</td>
+<td>8633</td>
+<td>620</td>
+<td>0.7576%</td>
+<td>TaxID 620</td>
+</tr>
+<tr>
+<td>9</td>
+<td>7055</td>
+<td>564</td>
+<td>0.6191%</td>
+<td>Escherichia fergusonii</td>
+</tr>
+<tr>
+<td>10</td>
+<td>3672</td>
+<td>32630</td>
+<td>0.3222%</td>
+<td>synthetic construct</td>
+</tr>
+<tr>
+<td>11</td>
+<td>3473</td>
+<td>1870930</td>
+<td>0.3048%</td>
+<td>TaxID 1870930</td>
+</tr>
+<tr>
+<td>12</td>
+<td>2652</td>
+<td>550</td>
+<td>0.2327%</td>
+<td>Enterobacter cloacae</td>
+</tr>
+<tr>
+<td>13</td>
+<td>2387</td>
+<td>573</td>
+<td>0.2095%</td>
+<td>Klebsiella pneumoniae</td>
+</tr>
+<tr>
+<td>14</td>
+<td>2106</td>
+<td>208962</td>
+<td>0.1848%</td>
+<td>Escherichia albertii</td>
+</tr>
+<tr>
+<td>15</td>
+<td>1496</td>
+<td>543</td>
+<td>0.1313%</td>
+<td>TaxID 543</td>
+</tr>
+<tr>
+<td>16</td>
+<td>1117</td>
+<td>546</td>
+<td>0.0980%</td>
+<td>Citrobacter freundii</td>
+</tr>
+<tr>
+<td>17</td>
+<td>1083</td>
+<td>158836</td>
+<td>0.0950%</td>
+<td>Enterobacter hormaechei</td>
+</tr>
+<tr>
+<td>18</td>
+<td>1061</td>
+<td>1647466</td>
+<td>0.0931%</td>
+<td>TaxID 1647466</td>
+</tr>
+<tr>
+<td>19</td>
+<td>1061</td>
+<td>1647465</td>
+<td>0.0931%</td>
+<td>TaxID 1647465</td>
+</tr>
+<tr>
+<td>20</td>
+<td>642</td>
+<td>1407493</td>
+<td>0.0563%</td>
+<td>TaxID 1407493</td>
+</tr>
+</table>
+
+<h2>GenomeGuard Interpretation</h2>
+
+<div class="warning">
+
+The sample contains a clear dominant taxonomic signal.
+
+A substantial secondary classified signal is also present.
+Secondary taxonomic evidence should therefore be investigated
+before assigning a simple single-organism interpretation.
+
+GenomeGuard reports computational taxonomic evidence.
+Secondary assignments do not independently prove:
+
+<ul>
+<li>contamination</li>
+<li>co-infection</li>
+<li>mixed biological origin</li>
+<li>true organism abundance</li>
+</ul>
+
+Closely related taxa may share sequence similarity.
+Reference database composition and classifier behaviour must
+therefore be considered before biological conclusions.
+
+</div>
+
+<h2>Input Information</h2>
+
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>GenomeGuard version</td><td>1.1</td></tr>
+<tr><td>Sample</td><td>SRR39879765</td></tr>
+<tr><td>Mode</td><td>PAIRED-END</td></tr>
+<tr><td>Read 1</td><td>SRR39879765_1.fastq</td></tr>
+<tr><td>Read 2</td><td>SRR39879765_2.fastq</td></tr>
+<tr><td>Centrifuge index</td><td>/home/intern/internship_projects/life-science/databases/centrifuge_index/p_compressed+h+v</td></tr>
+<tr><td>Threads</td><td>8</td></tr>
+</table>
+
+<div class="footer">
+Generated by GenomeGuard v1.1.
+This report describes computational taxonomic evidence and
+should not be interpreted as definitive biological proof.
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+==================================================
+           GENOMEGUARD v1.1
+       SAMPLE INTEGRITY ANALYSIS
+==================================================
+
+Sample      : SRR39879765
+Read 1      : SRR39879765_1.fastq
+Read 2      : SRR39879765_2.fastq
+Mode        : PAIRED-END
+Threads     : 8
+Output      : /home/intern/internship_projects/life-science/GenomeGuard/results/SRR39879765
+
+### INPUT / TOOL VALIDATION
+Centrifuge  : /home/intern/internship_projects/life-science/centrifuge/centrifuge
+Index       : /home/intern/internship_projects/life-science/databases/centrifuge_index/p_compressed+h+v
+Validation  : PASS
+
+### STEP 1: TAXONOMIC CLASSIFICATION
+
+report file /home/intern/internship_projects/life-science/GenomeGuard/results/SRR39879765/SRR39879765_report.tsv
+Number of iterations in EM algorithm: 6292
+Probability diff. (P - P_prev) in the last iteration: 9.91585e-11
+Calculating abundance: 00:00:03
+
+Centrifuge classification complete.
+
+### STEP 2: GENOMEGUARD EVIDENCE ENGINE
+
+
+==================================================
+        GENOMEGUARD v1.1 COMPLETE
+==================================================
+
+Sample:
+  SRR39879765
+
+Primary taxon:
+  Escherichia coli
+  TaxID: 562
+  Reads: 590731
+  Fraction: 51.8404%
+
+Secondary burden:
+  48.1596%
+
+Taxonomic complexity:
+  599 classified taxa
+
+Integrity category:
+  MODERATE DOMINANCE
+
+OUTPUT FILES
+
+TSV summary:
+  /home/intern/internship_projects/life-science/GenomeGuard/results/SRR39879765/SRR39879765_genomeguard_summary.tsv
+
+HTML report:
+  /home/intern/internship_projects/life-science/GenomeGuard/results/SRR39879765/SRR39879765_genomeguard_report.html
+
+Log:
+  /home/intern/internship_projects/life-science/GenomeGuard/results/SRR39879765/SRR39879765_genomeguard.log
+
+==================================================
