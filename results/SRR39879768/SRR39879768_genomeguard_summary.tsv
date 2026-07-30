@@ -1,0 +1,25 @@
+GenomeGuard_Version	1.1
+Sample	SRR39879768
+Input_Mode	PAIRED-END
+Read1	fastq/SRR39879768_1.fastq
+Read2	fastq/SRR39879768_2.fastq
+Total_Records	654997
+Classified_Records	648898
+Unclassified_Records	6099
+Classification_Rate_Percent	99.0689
+Unclassified_Rate_Percent	0.9311
+Dominant_TaxID	562
+Dominant_Taxon	Escherichia coli
+Dominant_Reads	493767
+Dominant_Fraction_Percent	76.0932
+Secondary_Reads	155131
+Secondary_Burden_Percent	23.9068
+Leading_Secondary_TaxID	1813821
+Leading_Secondary_Taxon	TaxID 1813821
+Leading_Secondary_Reads	33965
+Unique_Classified_Taxa	473
+Unclassified_QC	PASS
+Dominant_Signal_QC	PASS
+Secondary_Burden_QC	FLAG
+Taxonomic_Complexity_QC	FLAG
+Integrity_Category	MODERATE DOMINANCE
